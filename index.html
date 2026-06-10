@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Arcade Planet — Carta</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1a0a2e;display:flex;justify-content:center;}
+.wrap{
+  width:100%;max-width:430px;
+  background:#0a0a1a;
+  font-family:'Press Start 2P',monospace;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+.wrap::before{
+  content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);
+  pointer-events:none;z-index:999;
+}
+
+/* SPLASH */
+#splash{
+  min-height:100vh;background:#0a0a1a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:30px 20px;text-align:center;
+}
+.s-title{font-size:22px;color:#ff0;text-shadow:4px 4px 0 #7a6000;line-height:1.7;margin-bottom:4px;}
+.s-sub{font-size:6px;color:#0ff;letter-spacing:3px;margin-bottom:28px;animation:blink 1.2s step-start infinite;}
+#pacCanvas{display:block;margin:0 auto 22px;}
+.s-score{font-size:6px;color:#f0f;margin-bottom:3px;}
+.s-score span{color:#ff0;}
+.s-btn{
+  margin-top:18px;background:transparent;border:2px solid #ff0;
+  color:#ff0;font-family:'Press Start 2P',monospace;
+  font-size:8px;padding:13px 26px;cursor:pointer;
+  animation:blink 0.85s step-start infinite;border-radius:4px;
+}
+.s-btn:active{background:#ff0;color:#000;}
+.s-ghosts{margin-top:22px;font-size:6px;color:#555;display:flex;gap:16px;align-items:center;justify-content:center;}
+.s-ghosts span{font-size:18px;}
+.ghost-r{animation:gup 3s ease-in-out infinite;}
+.ghost-b{animation:gdn 4s ease-in-out infinite;}
+@keyframes gup{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes gdn{0%,100%{transform:translateY(-5px)}50%{transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes blinkS{0%,100%{opacity:1}50%{opacity:0.25}}
+
+/* PIXEL STRIP */
+.strip{height:6px;background:repeating-linear-gradient(90deg,#f00 0 10px,#ff0 10px 20px,#0f0 20px 30px,#0ff 30px 40px,#f0f 40px 50px);flex-shrink:0;}
+
+/* TOP BAR */
+.topbar{
+  background:#080812;padding:11px 14px 9px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:2px solid #1a1a2e;
+}
+.top-title{font-size:12px;color:#ff0;text-shadow:2px 2px 0 #7a6000;letter-spacing:1px;}
+.top-lives{font-size:11px;color:#f00;letter-spacing:3px;}
+
+/* NAV */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:#080812;border-bottom:2px solid #1a1a2e;
+  display:flex;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.nav::-webkit-scrollbar{display:none;}
+.nb{
+  flex-shrink:0;background:transparent;border:none;
+  border-bottom:3px solid transparent;
+  color:#444;font-family:'Press Start 2P',monospace;
+  font-size:5px;padding:9px 11px 7px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  white-space:nowrap;
+}
+.nb em{font-size:13px;font-style:normal;}
+.nb.active{color:#ff0;border-bottom-color:#ff0;background:#151500;}
+
+/* TICKER */
+.ticker{background:#ff0;overflow:hidden;white-space:nowrap;padding:5px 0;flex-shrink:0;}
+.ticker-in{display:inline-block;animation:tick 22s linear infinite;font-size:6px;color:#000;padding-right:40px;}
+@keyframes tick{0%{transform:translateX(430px)}100%{transform:translateX(-100%)}}
+
+/* NOTA INCLUIDO */
+.nota{
+  margin:10px 14px 0;
+  background:#0d1f0d;border:1.5px solid #0f0;
+  border-radius:6px;padding:9px 12px;
+  font-size:6px;color:#0f0;line-height:2;text-align:center;
+}
+.nota.roja{background:#1f0d0d;border-color:#f00;color:#f66;}
+
+/* SECTION */
+.sec{padding:14px 14px 4px;scroll-margin-top:52px;}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-art{font-size:26px;line-height:1;}
+.sec-lbl{font-size:8px;color:#0ff;border-left:3px solid #0ff;padding-left:8px;text-transform:uppercase;line-height:1.6;}
+.sec-lvl{font-size:5px;color:#445;margin-top:3px;}
+
+/* ITEM CARD */
+.ic{
+  background:#0d1117;border:1.5px solid #1e293b;
+  border-radius:6px;padding:11px 12px;margin-bottom:7px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  position:relative;
+}
+.ic:active{border-color:#ff0;}
+.ic-left{flex:1;}
+.ic-icon{font-size:16px;margin-bottom:4px;}
+.ic-name{font-size:6px;color:#eee;line-height:1.8;margin-bottom:3px;}
+.ic-desc{font-size:5px;color:#445;line-height:1.9;}
+.ic-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-top:2px;}
+.ic-price{font-size:8px;color:#0f0;white-space:nowrap;}
+.badge{font-size:5px;padding:2px 5px;border-radius:3px;white-space:nowrap;}
+.badge.hot{background:#ff3300;color:#fff;}
+.badge.fav{background:#ff0;color:#000;}
+.badge.new{background:#00cc44;color:#000;}
+
+/* DRINK ROW */
+.dr{
+  background:#0d1117;border:1.5px solid #1e293b;
+  border-radius:6px;padding:10px 12px;margin-bottom:7px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.dr-l{display:flex;align-items:center;gap:8px;}
+.dr-ico{font-size:15px;}
+.dr-name{font-size:6px;color:#eee;margin-bottom:3px;}
+.dr-sub{font-size:5px;color:#445;line-height:1.8;}
+.dr-price{font-size:8px;white-space:nowrap;}
+.pr-b{color:#4df;} .pr-p{color:#f0f;} .pr-y{color:#ff0;} .pr-g{color:#0f0;}
+
+/* FOOTER */
+.footer{background:#080812;border-top:2px solid #1a1a2e;padding:16px 14px;text-align:center;margin-top:8px;}
+.ft-pac{font-size:22px;animation:blinkS 2s ease infinite;margin-bottom:8px;}
+.ft-txt{font-size:5px;color:#333;line-height:2.4;}
+.ft-score{font-size:6px;color:#ff0;margin-top:8px;animation:blink 1.5s step-start infinite;}
+</style>
+</head>
+<body>
+<div class="wrap" id="mainWrap">
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="s-title">🕹️ ARCADE<br>PLANET 🕹️</div>
+  <div class="s-sub">— THE ULTIMATE BAR EXPERIENCE —</div>
+  <canvas id="pacCanvas" width="300" height="80"></canvas>
+  <div class="s-score">HI-SCORE <span>999.999</span></div>
+  <div class="s-score">1UP <span>000.000</span></div>
+  <button class="s-btn" id="startBtn">▶ VER CARTA</button>
+  <div class="s-ghosts">
+    <span class="ghost-r">👻</span> INKY
+    <span style="font-size:20px">😮</span> PAC
+    <span class="ghost-b">👻</span> BLINKY
+  </div>
+</div>
+
+<!-- CARTA -->
+<div id="carta" style="display:none;flex-direction:column;">
+  <div class="strip"></div>
+  <div class="topbar">
+    <div class="top-title">🕹️ ARCADE PLANET</div>
+    <div class="top-lives">♥♥♥</div>
+  </div>
+
+  <nav class="nav" id="navBar">
+    <button class="nb active" data-t="baguettes"><em>🥖</em>BAGUET</button>
+    <button class="nb" data-t="burguers"><em>🍔</em>BURGUER</button>
+    <button class="nb" data-t="perritos"><em>🌭</em>PERRITO</button>
+    <button class="nb" data-t="sandwiches"><em>🥪</em>SANDWICH</button>
+    <button class="nb" data-t="varios"><em>🍗</em>VARIOS</button>
+    <button class="nb" data-t="pizzas"><em>🍕</em>PIZZAS</button>
+    <button class="nb" data-t="montaditos"><em>🍞</em>MONTAD.</button>
+    <button class="nb" data-t="bebidas"><em>🥤</em>BEBIDAS</button>
+  </nav>
+
+  <div class="ticker"><span class="ticker-in">⬛ ARCADE PLANET · THE ULTIMATE BAR EXPERIENCE · COME · JUEGA · DISFRUTA · INSERT COIN · BEBIDAS Y PATATAS INCLUIDAS EN BAGUETTES · BURGUERS · PERRITOS · SANDWICHES ⬛ ARCADE PLANET · THE ULTIMATE BAR EXPERIENCE ⬛</span></div>
+
+  <!-- BAGUETTES -->
+  <div id="baguettes">
+    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🥖</div>
+        <div><div class="sec-lbl">BAGUETTES</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">BAGUET POLLO</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🏔️</div><div class="ic-name">BAGUET SERRANA</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐟</div><div class="ic-name">BAGUET ATÚN</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍪</div><div class="ic-name">BAGUET MANTECADO</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐷</div><div class="ic-name">BAGUET COCHINITO</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">BAGUET LOMO ADOBADO</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍳</div><div class="ic-name">BAGUET TORTILLA</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- BURGUERS -->
+  <div id="burguers">
+    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🍔</div>
+        <div><div class="sec-lbl">BURGUERS</div><div class="sec-lvl">NIVEL 2 — NORMAL MODE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍔</div><div class="ic-name">BURGUER SIMPLE</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍔</div><div class="ic-name">BURGUER COMPLETA</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">9,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">BURGUER ANGUS</div></div><div class="ic-right"><span class="badge hot">BOSS</span><div class="ic-price">12,50€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- PERRITOS -->
+  <div id="perritos">
+    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🌭</div>
+        <div><div class="sec-lbl">PERRITOS</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🌭</div><div class="ic-name">PERRITO SIMPLE</div></div><div class="ic-right"><div class="ic-price">5,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🌭</div><div class="ic-name">PERRITO COMPLETO</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">7,50€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- SANDWICHES -->
+  <div id="sandwiches">
+    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🥪</div>
+        <div><div class="sec-lbl">SANDWICHES</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">SANDWICH POLLO</div></div><div class="ic-right"><div class="ic-price">9,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐟</div><div class="ic-name">SANDWICH ATÚN</div></div><div class="ic-right"><div class="ic-price">8,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">⭐</div><div class="ic-name">SANDWICH ESPECIAL</div></div><div class="ic-right"><span class="badge new">NEW</span><div class="ic-price">8,00€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- VARIOS -->
+  <div id="varios">
+    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">👾</div>
+        <div><div class="sec-lbl">VARIOS</div><div class="sec-lvl">BONUS STAGE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">ALITAS POLLO</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">LAGRIMITAS</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🧀</div><div class="ic-name">SOLOMILLO 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥃</div><div class="ic-name">SOLOMILLO WHISKY</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍖</div><div class="ic-name">FLAMENQUÍN</div></div><div class="ic-right"><div class="ic-price">9,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🫓</div><div class="ic-name">CROQUETAS</div></div><div class="ic-right"><div class="ic-price">5,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍢</div><div class="ic-name">PINCHITOS</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🔥</div><div class="ic-name">PATATAS BRAVAS</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">5,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">NUGGETS</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- PIZZAS -->
+  <div id="pizzas">
+    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🍕</div>
+        <div><div class="sec-lbl">PIZZAS</div><div class="sec-lvl">FINAL BOSS — HARD MODE</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">PIZZA POLLO</div></div><div class="ic-right"><div class="ic-price">20,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🧀</div><div class="ic-name">PIZZA 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">20,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">PIZZA BARBACOA</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">20,00€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- MONTADITOS -->
+  <div id="montaditos">
+    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🍞</div>
+        <div><div class="sec-lbl">MONTADITOS</div><div class="sec-lvl">MINI GAME</div></div>
+      </div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">MONTADITO POLLO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">MONTADITO LOMO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><div class="ic-icon">🥓</div><div class="ic-name">BACON Y QUESO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <!-- BEBIDAS -->
+  <div id="bebidas">
+    <div class="sec">
+      <div class="sec-hdr">
+        <div class="sec-art">🥤</div>
+        <div><div class="sec-lbl">BEBIDAS</div><div class="sec-lvl">POWER-UPS</div></div>
+      </div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🍺</div><div><div class="dr-name">CAÑA</div><div class="dr-sub">Presión del barril</div></div></div><div class="dr-price pr-b">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🍺</div><div><div class="dr-name">BOTELLÍN</div><div class="dr-sub">Estrella / Voll-Damm</div></div></div><div class="dr-price pr-b">2,50€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🥤</div><div><div class="dr-name">COCA-COLA</div><div class="dr-sub">Normal / Zero / Light</div></div></div><div class="dr-price pr-p">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🍊</div><div><div class="dr-name">FANTA</div><div class="dr-sub">Naranja / Limón</div></div></div><div class="dr-price pr-p">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🫧</div><div><div class="dr-name">AQUARIUS / SPRITE</div><div class="dr-sub">Varios sabores</div></div></div><div class="dr-price pr-p">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">💧</div><div><div class="dr-name">AGUA</div><div class="dr-sub">Con gas / Sin gas</div></div></div><div class="dr-price pr-p">1,50€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">☕</div><div><div class="dr-name">CAFÉ</div><div class="dr-sub">Solo / Cortado / Con leche</div></div></div><div class="dr-price pr-y">1,50€</div></div>
+      <div class="dr"><div class="dr-l"><div class="dr-ico">🍷</div><div><div class="dr-name">VINO DE LA CASA</div><div class="dr-sub">Tinto / Blanco / Rosado</div></div></div><div class="dr-price pr-y">2,00€</div></div>
+    </div>
+  </div>
+  <div class="strip"></div>
+
+  <div class="footer">
+    <div class="ft-pac">😮·····👻👻</div>
+    <div class="ft-txt">
+      Alérgenos disponibles al solicitar · Precios con IVA incluido<br>
+      ♥ ♥ ♥ — GAME NOT OVER
+    </div>
+    <div class="ft-score">© ARCADE PLANET — HI-SCORE: TÚ</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* PAC-MAN */
+const cv=document.getElementById('pacCanvas'),ctx=cv.getContext('2d');
+const W=300,H=80,PAC_Y=40,PAC_R=14;
+let px=20,mouth=0,mdir=1;
+// dots spread across the path
+const dots=[];for(let i=50;i<270;i+=18)dots.push({x:i,eaten:false});
+// ghosts start to the RIGHT of pac-man, fleeing ahead
+const ghosts=[{x:220,c:'#ff0080'},{x:255,c:'#00ccff'}];
+
+function resetRound(){
+  px=20;
+  dots.forEach(d=>d.eaten=false);
+  ghosts[0].x=220;ghosts[1].x=255;
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // dots
+  dots.forEach(d=>{
+    if(!d.eaten){
+      ctx.fillStyle='#ff0';
+      ctx.beginPath();ctx.arc(d.x,PAC_Y,3,0,Math.PI*2);ctx.fill();
+    }
+  });
+
+  // ghosts — move right, always ahead of pac-man
+  ghosts.forEach(g=>{
+    // flee to the right
+    g.x+=1.0;
+    if(g.x>W+20) g.x=-20; // wrap around
+
+    // body
+    ctx.fillStyle=g.c;
+    ctx.beginPath();
+    ctx.arc(g.x,PAC_Y-2,10,Math.PI,0);
+    ctx.lineTo(g.x+10,PAC_Y+10);
+    ctx.lineTo(g.x+6,PAC_Y+6);
+    ctx.lineTo(g.x+2,PAC_Y+10);
+    ctx.lineTo(g.x-2,PAC_Y+6);
+    ctx.lineTo(g.x-6,PAC_Y+10);
+    ctx.lineTo(g.x-10,PAC_Y+10);
+    ctx.closePath();ctx.fill();
+    // eyes
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(g.x-4,PAC_Y-4,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(g.x+4,PAC_Y-4,3,0,Math.PI*2);ctx.fill();
+    // pupils looking right (fleeing)
+    ctx.fillStyle='#00f';
+    ctx.beginPath();ctx.arc(g.x-3,PAC_Y-4,1.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(g.x+5,PAC_Y-4,1.5,0,Math.PI*2);ctx.fill();
+
+    // pac-man eats ghost on contact
+    if(Math.abs(g.x-px)<16){ g.x=W+30; }
+  });
+
+  // mouth animation
+  mouth+=0.13*mdir;
+  if(mouth>0.32||mouth<0.02) mdir*=-1;
+
+  // pac-man facing RIGHT
+  ctx.fillStyle='#ff0';
+  ctx.beginPath();
+  ctx.moveTo(px,PAC_Y);
+  ctx.arc(px,PAC_Y,PAC_R,mouth*Math.PI,(2-mouth)*Math.PI);
+  ctx.closePath();ctx.fill();
+  // eye
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.arc(px+3,PAC_Y-6,2,0,Math.PI*2);ctx.fill();
+
+  // eat dots
+  dots.forEach(d=>{
+    if(!d.eaten&&Math.abs(d.x-px)<PAC_R) d.eaten=true;
+  });
+
+  // advance pac-man to the right
+  px+=1.5;
+  if(px>W+20) resetRound();
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* START */
+document.getElementById('startBtn').addEventListener('click',()=>{
+  document.getElementById('splash').style.display='none';
+  const c=document.getElementById('carta');c.style.display='flex';c.style.flexDirection='column';
+});
+
+/* NAV */
+const secs=['baguettes','burguers','perritos','sandwiches','varios','pizzas','montaditos','bebidas'];
+const btns=document.querySelectorAll('.nb');
+btns.forEach(b=>{
+  b.addEventListener('click',()=>{document.getElementById(b.dataset.t).scrollIntoView({behavior:'smooth'});});
+});
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      btns.forEach(b=>b.classList.toggle('active',b.dataset.t===id));
+      const ab=document.querySelector(`.nb[data-t="${id}"]`);
+      if(ab)ab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    }
+  });
+},{rootMargin:'-15% 0px -75% 0px'});
+secs.forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
+</script>
+</body>
+</html>
