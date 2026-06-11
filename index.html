@@ -2,435 +2,687 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Arcade Planet — Carta</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#1a0a2e;display:flex;justify-content:center;}
-.wrap{
-  width:100%;max-width:430px;
-  background:#0a0a1a;
-  font-family:'Press Start 2P',monospace;
-  min-height:100vh;
-  position:relative;
-  overflow-x:hidden;
-}
-.wrap::before{
-  content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:430px;height:100%;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);
-  pointer-events:none;z-index:999;
-}
+html,body{height:100%;overflow-x:hidden;overflow-y:auto;}
+body{background:#1a0a2e;display:flex;justify-content:center;font-family:'Press Start 2P',monospace;}
+.wrap{width:100%;max-width:430px;min-height:100vh;overflow-x:hidden;background:#5ac8fa;}
 
-/* SPLASH */
-#splash{
-  min-height:100vh;background:#0a0a1a;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:30px 20px;text-align:center;
-}
-.s-title{font-size:22px;color:#ff0;text-shadow:4px 4px 0 #7a6000;line-height:1.7;margin-bottom:4px;}
-.s-sub{font-size:6px;color:#0ff;letter-spacing:3px;margin-bottom:28px;animation:blink 1.2s step-start infinite;}
-#pacCanvas{display:block;margin:0 auto 22px;}
-.s-score{font-size:6px;color:#f0f;margin-bottom:3px;}
-.s-score span{color:#ff0;}
-.s-btn{
-  margin-top:18px;background:transparent;border:2px solid #ff0;
-  color:#ff0;font-family:'Press Start 2P',monospace;
-  font-size:8px;padding:13px 26px;cursor:pointer;
-  animation:blink 0.85s step-start infinite;border-radius:4px;
-}
-.s-btn:active{background:#ff0;color:#000;}
-.s-ghosts{margin-top:22px;font-size:6px;color:#555;display:flex;gap:16px;align-items:center;justify-content:center;}
-.s-ghosts span{font-size:18px;}
-.ghost-r{animation:gup 3s ease-in-out infinite;}
-.ghost-b{animation:gdn 4s ease-in-out infinite;}
-@keyframes gup{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes gdn{0%,100%{transform:translateY(-5px)}50%{transform:translateY(0)}}
+/* SKY */
+.sky{background:linear-gradient(180deg,#1a7ac8 0%,#5ac8fa 60%,#7adcfa 100%);position:relative;overflow:hidden;}
+.c1,.c2,.c3{position:absolute;background:#fff;border-radius:50px;pointer-events:none;}
+.c1{width:90px;height:26px;top:16px;left:10px;animation:cdrift 10s ease-in-out infinite;}
+.c1::before{content:'';position:absolute;width:44px;height:44px;background:#fff;border-radius:50%;top:-22px;left:14px;}
+.c1::after{content:'';position:absolute;width:34px;height:34px;background:#fff;border-radius:50%;top:-18px;left:42px;}
+.c2{width:100px;height:28px;top:18px;right:8px;animation:cdrift 13s ease-in-out infinite reverse;}
+.c2::before{content:'';position:absolute;width:48px;height:48px;background:#fff;border-radius:50%;top:-24px;left:16px;}
+.c2::after{content:'';position:absolute;width:36px;height:36px;background:#fff;border-radius:50%;top:-18px;left:48px;}
+.c3{width:70px;height:20px;top:65px;left:38%;animation:cdrift 11s ease-in-out 2s infinite;}
+.c3::before{content:'';position:absolute;width:34px;height:34px;background:#fff;border-radius:50%;top:-17px;left:10px;}
+.c3::after{content:'';position:absolute;width:26px;height:26px;background:#fff;border-radius:50%;top:-13px;left:32px;}
+@keyframes cdrift{0%,100%{transform:translateX(0)}50%{transform:translateX(14px)}}
+
+.game-title{font-size:17px;color:#fff;text-shadow:3px 3px 0 #c0392b,5px 5px 0 #7a1a00;line-height:1.9;text-align:center;position:relative;z-index:2;padding-top:22px;margin-bottom:6px;}
+.game-sub{font-size:6px;color:#ffe;letter-spacing:2px;text-align:center;position:relative;z-index:2;margin-bottom:16px;animation:blink 1.2s step-start infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-@keyframes blinkS{0%,100%{opacity:1}50%{opacity:0.25}}
+#pacCanvas{display:block;margin:0 auto 10px;position:relative;z-index:2;}
+.hiscore{font-size:6px;color:#fff;text-align:center;margin-bottom:4px;position:relative;z-index:2;text-shadow:1px 1px 0 #0005;}
+.hiscore span{color:#ff0;}
+.start-btn{display:block;margin:12px auto 0;background:#ff0;border:3px solid #c0392b;color:#1a0a00;font-family:'Press Start 2P',monospace;font-size:8px;padding:13px 24px;cursor:pointer;border-radius:3px;animation:blink 0.9s step-start infinite;position:relative;z-index:2;box-shadow:3px 3px 0 #7a1a00;}
+.start-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #7a1a00;}
+.scene{position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:space-around;padding:18px 8px 0;}
 
-/* PIXEL STRIP */
-.strip{height:6px;background:repeating-linear-gradient(90deg,#f00 0 10px,#ff0 10px 20px,#0f0 20px 30px,#0ff 30px 40px,#f0f 40px 50px);flex-shrink:0;}
-
-/* TOP BAR */
-.topbar{
-  background:#080812;padding:11px 14px 9px;
-  display:flex;justify-content:space-between;align-items:center;
-  border-bottom:2px solid #1a1a2e;
-}
-.top-title{font-size:12px;color:#ff0;text-shadow:2px 2px 0 #7a6000;letter-spacing:1px;}
-.top-lives{font-size:11px;color:#f00;letter-spacing:3px;}
+/* GROUND */
+.ground{flex-shrink:0;}
+.gt{height:8px;background:repeating-linear-gradient(90deg,#7ab840 0 8px,#5d8a2a 8px 16px);}
+.gm{height:14px;background:repeating-linear-gradient(90deg,#5d8a2a 0 16px,#4a7020 16px 32px);}
+.gb{height:10px;background:#3a5010;border-bottom:4px solid #2a3a08;}
 
 /* NAV */
-.nav{
-  position:sticky;top:0;z-index:50;
-  background:#080812;border-bottom:2px solid #1a1a2e;
-  display:flex;overflow-x:auto;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-}
+.nav{position:sticky;top:0;z-index:100;background:#1a0a2e;border-bottom:3px solid #ff0;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
 .nav::-webkit-scrollbar{display:none;}
-.nb{
-  flex-shrink:0;background:transparent;border:none;
-  border-bottom:3px solid transparent;
-  color:#444;font-family:'Press Start 2P',monospace;
-  font-size:5px;padding:9px 11px 7px;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  white-space:nowrap;
-}
-.nb em{font-size:13px;font-style:normal;}
-.nb.active{color:#ff0;border-bottom-color:#ff0;background:#151500;}
+.nb{flex-shrink:0;background:transparent;border:none;border-bottom:3px solid transparent;color:#555;font-family:'Press Start 2P',monospace;font-size:5px;padding:10px 10px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;white-space:nowrap;}
+.nb-icon{width:20px;height:20px;}
+.nb.active{color:#ff0;border-bottom-color:#ff0;background:#2a1a00;}
 
 /* TICKER */
-.ticker{background:#ff0;overflow:hidden;white-space:nowrap;padding:5px 0;flex-shrink:0;}
-.ticker-in{display:inline-block;animation:tick 22s linear infinite;font-size:6px;color:#000;padding-right:40px;}
+.ticker{background:#c0392b;overflow:hidden;white-space:nowrap;padding:5px 0;}
+.ticker-in{display:inline-block;animation:tick 22s linear infinite;font-size:6px;color:#ffe;padding-right:40px;}
 @keyframes tick{0%{transform:translateX(430px)}100%{transform:translateX(-100%)}}
 
-/* NOTA INCLUIDO */
-.nota{
-  margin:10px 14px 0;
-  background:#0d1f0d;border:1.5px solid #0f0;
-  border-radius:6px;padding:9px 12px;
-  font-size:6px;color:#0f0;line-height:2;text-align:center;
-}
-.nota.roja{background:#1f0d0d;border-color:#f00;color:#f66;}
+/* WORLD SECTION */
+.world{background:linear-gradient(180deg,#5ac8fa 0%,#7adcfa 100%);position:relative;}
 
-/* SECTION */
-.sec{padding:14px 14px 4px;scroll-margin-top:52px;}
-.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.sec-art{font-size:26px;line-height:1;}
-.sec-lbl{font-size:8px;color:#0ff;border-left:3px solid #0ff;padding-left:8px;text-transform:uppercase;line-height:1.6;}
-.sec-lvl{font-size:5px;color:#445;margin-top:3px;}
+/* FONDO DIFUMINADO detrás de las tarjetas */
+.world-bg{position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:space-around;align-items:flex-end;padding:0 10px;pointer-events:none;opacity:0.13;z-index:0;overflow:hidden;}
+.world-bg svg{flex-shrink:0;}
 
-/* ITEM CARD */
-.ic{
-  background:#0d1117;border:1.5px solid #1e293b;
-  border-radius:6px;padding:11px 12px;margin-bottom:7px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
-  position:relative;
-}
-.ic:active{border-color:#ff0;}
-.ic-left{flex:1;}
-.ic-icon{font-size:16px;margin-bottom:4px;}
-.ic-name{font-size:6px;color:#eee;line-height:1.8;margin-bottom:3px;}
-.ic-desc{font-size:5px;color:#445;line-height:1.9;}
-.ic-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-top:2px;}
-.ic-price{font-size:8px;color:#0f0;white-space:nowrap;}
-.badge{font-size:5px;padding:2px 5px;border-radius:3px;white-space:nowrap;}
-.badge.hot{background:#ff3300;color:#fff;}
-.badge.fav{background:#ff0;color:#000;}
-.badge.new{background:#00cc44;color:#000;}
+.sec-title-box{margin:8px 12px;background:#c0392b;border:3px solid #ff0;border-radius:3px;padding:9px 12px;text-align:center;font-size:9px;color:#ff0;text-shadow:2px 2px 0 #7a1a00;box-shadow:3px 3px 0 #7a1a00;position:relative;z-index:1;}
+.sec-subtitle{font-size:5px;color:#ffd;margin-top:4px;}
+.nota{margin:6px 12px;background:#155f15;border:2px solid #7ab840;border-radius:3px;padding:7px 10px;font-size:5px;color:#7ff07f;text-align:center;line-height:2;position:relative;z-index:1;}
+.nota.roja{background:#5f1515;border-color:#c0392b;color:#ffaaaa;}
 
-/* DRINK ROW */
-.dr{
-  background:#0d1117;border:1.5px solid #1e293b;
-  border-radius:6px;padding:10px 12px;margin-bottom:7px;
-  display:flex;justify-content:space-between;align-items:center;gap:8px;
-}
+/* ITEMS */
+.items{padding:4px 12px 8px;position:relative;z-index:1;}
+.ic{background:#fffde7;border:3px solid #c0392b;border-radius:3px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:3px 3px 0 #7a1a00;}
+.ic-left{display:flex;align-items:center;gap:10px;flex:1;}
+.ic-icon{width:28px;height:28px;flex-shrink:0;}
+.ic-name{font-size:6px;color:#1a0a00;line-height:1.8;}
+.ic-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.ic-price{font-size:9px;color:#c0392b;white-space:nowrap;}
+.badge{font-size:5px;padding:2px 5px;border-radius:2px;white-space:nowrap;border:1px solid;}
+.badge.hot{background:#ff3300;color:#fff;border-color:#aa1100;}
+.badge.fav{background:#ff0;color:#7a1a00;border-color:#c0392b;}
+.badge.new{background:#00aa33;color:#fff;border-color:#007722;}
+.badge.boss{background:#a000ff;color:#fff;border-color:#6600aa;}
+
+/* DRINKS */
+.drinks-wrap{padding:4px 12px 8px;position:relative;z-index:1;}
+.dr{background:#fffde7;border:3px solid #c0392b;border-radius:3px;padding:9px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:3px 3px 0 #7a1a00;}
 .dr-l{display:flex;align-items:center;gap:8px;}
-.dr-ico{font-size:15px;}
-.dr-name{font-size:6px;color:#eee;margin-bottom:3px;}
-.dr-sub{font-size:5px;color:#445;line-height:1.8;}
-.dr-price{font-size:8px;white-space:nowrap;}
-.pr-b{color:#4df;} .pr-p{color:#f0f;} .pr-y{color:#ff0;} .pr-g{color:#0f0;}
+.dr-ico{width:24px;height:28px;}
+.dr-name{font-size:6px;color:#1a0a00;margin-bottom:3px;}
+.dr-sub{font-size:5px;color:#7a4a00;line-height:1.8;}
+.dr-price{font-size:9px;color:#c0392b;white-space:nowrap;}
 
 /* FOOTER */
-.footer{background:#080812;border-top:2px solid #1a1a2e;padding:16px 14px;text-align:center;margin-top:8px;}
-.ft-pac{font-size:22px;animation:blinkS 2s ease infinite;margin-bottom:8px;}
-.ft-txt{font-size:5px;color:#333;line-height:2.4;}
+.footer{background:#1a0a2e;border-top:3px solid #ff0;padding:16px 14px;text-align:center;}
+.footer-sprites{display:flex;justify-content:center;gap:14px;align-items:flex-end;margin-bottom:10px;}
+.ft-txt{font-size:5px;color:#555;line-height:2.4;}
 .ft-score{font-size:6px;color:#ff0;margin-top:8px;animation:blink 1.5s step-start infinite;}
 </style>
 </head>
 <body>
-<div class="wrap" id="mainWrap">
+<div class="wrap">
+
+<!-- SVG DEFS -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden;">
+<defs>
+  <symbol id="s-shroom" viewBox="0 0 32 34">
+    <rect x="11" y="22" width="10" height="12" fill="#f5deb3"/>
+    <rect x="8" y="20" width="16" height="4" fill="#f5deb3"/>
+    <rect x="5" y="12" width="22" height="10" fill="#e74c3c"/>
+    <rect x="2" y="14" width="4" height="8" fill="#e74c3c"/>
+    <rect x="26" y="14" width="4" height="8" fill="#e74c3c"/>
+    <rect x="8" y="6" width="16" height="6" fill="#e74c3c"/>
+    <rect x="12" y="2" width="8" height="4" fill="#e74c3c"/>
+    <rect x="7" y="14" width="6" height="5" fill="#fff"/>
+    <rect x="19" y="12" width="6" height="5" fill="#fff"/>
+    <rect x="10" y="26" width="3" height="3" fill="#333"/>
+    <rect x="19" y="26" width="3" height="3" fill="#333"/>
+    <rect x="13" y="28" width="6" height="2" fill="#333"/>
+  </symbol>
+  <symbol id="s-castle" viewBox="0 0 48 44">
+    <rect x="2" y="32" width="44" height="12" fill="#b0b0b0"/>
+    <rect x="0" y="34" width="6" height="10" fill="#909090"/>
+    <rect x="42" y="34" width="6" height="10" fill="#909090"/>
+    <rect x="8" y="22" width="32" height="16" fill="#c0c0c0"/>
+    <rect x="4" y="26" width="6" height="12" fill="#a0a0a0"/>
+    <rect x="38" y="26" width="6" height="12" fill="#a0a0a0"/>
+    <rect x="2" y="18" width="8" height="8" fill="#c0c0c0"/>
+    <rect x="12" y="18" width="8" height="8" fill="#c0c0c0"/>
+    <rect x="28" y="18" width="8" height="8" fill="#c0c0c0"/>
+    <rect x="38" y="18" width="8" height="8" fill="#c0c0c0"/>
+    <rect x="18" y="30" width="12" height="14" fill="#555"/>
+    <rect x="20" y="28" width="8" height="6" fill="#555"/>
+    <rect x="8" y="28" width="6" height="6" fill="#444"/>
+    <rect x="34" y="28" width="6" height="6" fill="#444"/>
+  </symbol>
+  <symbol id="s-pipe" viewBox="0 0 26 38">
+    <rect x="3" y="10" width="20" height="28" fill="#27ae60"/>
+    <rect x="5" y="12" width="8" height="26" fill="#2ecc71"/>
+    <rect x="0" y="4" width="26" height="8" fill="#2ecc71"/>
+    <rect x="2" y="4" width="22" height="3" fill="#27ae60"/>
+    <rect x="3" y="6" width="5" height="3" fill="#58d68d"/>
+  </symbol>
+  <symbol id="s-tree" viewBox="0 0 36 46">
+    <rect x="14" y="34" width="8" height="12" fill="#795548"/>
+    <rect x="12" y="36" width="12" height="6" fill="#6d4c41"/>
+    <rect x="4" y="20" width="28" height="16" fill="#27ae60"/>
+    <rect x="2" y="22" width="6" height="12" fill="#27ae60"/>
+    <rect x="28" y="22" width="6" height="12" fill="#27ae60"/>
+    <rect x="8" y="12" width="20" height="10" fill="#2ecc71"/>
+    <rect x="12" y="6" width="12" height="8" fill="#27ae60"/>
+    <rect x="14" y="2" width="8" height="6" fill="#2ecc71"/>
+  </symbol>
+  <symbol id="s-star" viewBox="0 0 24 24">
+    <rect x="10" y="0" width="4" height="4" fill="#f1c40f"/>
+    <rect x="8" y="4" width="8" height="4" fill="#f1c40f"/>
+    <rect x="0" y="8" width="24" height="4" fill="#f1c40f"/>
+    <rect x="2" y="12" width="20" height="4" fill="#f1c40f"/>
+    <rect x="4" y="16" width="5" height="4" fill="#f1c40f"/>
+    <rect x="15" y="16" width="5" height="4" fill="#f1c40f"/>
+    <rect x="6" y="20" width="3" height="4" fill="#f1c40f"/>
+    <rect x="15" y="20" width="3" height="4" fill="#f1c40f"/>
+  </symbol>
+  <symbol id="s-flower" viewBox="0 0 20 26">
+    <rect x="9" y="12" width="2" height="14" fill="#27ae60"/>
+    <rect x="5" y="16" width="6" height="2" fill="#27ae60"/>
+    <rect x="5" y="4" width="3" height="3" fill="#e74c3c"/>
+    <rect x="12" y="4" width="3" height="3" fill="#e74c3c"/>
+    <rect x="2" y="7" width="3" height="5" fill="#e74c3c"/>
+    <rect x="15" y="7" width="3" height="5" fill="#e74c3c"/>
+    <rect x="5" y="12" width="3" height="3" fill="#e74c3c"/>
+    <rect x="12" y="12" width="3" height="3" fill="#e74c3c"/>
+    <rect x="7" y="5" width="6" height="10" fill="#f39c12"/>
+    <rect x="5" y="7" width="10" height="6" fill="#f39c12"/>
+    <rect x="9" y="7" width="2" height="2" fill="#fff"/>
+  </symbol>
+  <symbol id="s-coin" viewBox="0 0 18 18">
+    <rect x="5" y="0" width="8" height="2" fill="#f1c40f"/>
+    <rect x="3" y="2" width="12" height="2" fill="#f1c40f"/>
+    <rect x="1" y="4" width="16" height="10" fill="#f1c40f"/>
+    <rect x="3" y="14" width="12" height="2" fill="#f1c40f"/>
+    <rect x="5" y="16" width="8" height="2" fill="#f1c40f"/>
+    <rect x="4" y="4" width="5" height="10" fill="#fff" opacity=".35"/>
+  </symbol>
+  <!-- ICONOS DE COMIDA -->
+  <symbol id="ic-baguette" viewBox="0 0 36 16">
+    <rect x="4" y="2" width="28" height="12" fill="#d4a060"/>
+    <rect x="2" y="4" width="32" height="8" fill="#e8b870"/>
+    <rect x="0" y="6" width="36" height="4" fill="#c8903c"/>
+    <rect x="6" y="2" width="4" height="12" fill="#e8c080" opacity=".4"/>
+    <rect x="17" y="2" width="4" height="12" fill="#e8c080" opacity=".4"/>
+    <rect x="28" y="2" width="4" height="12" fill="#e8c080" opacity=".4"/>
+    <rect x="2" y="4" width="2" height="8" fill="#c8903c"/>
+    <rect x="32" y="4" width="2" height="8" fill="#c8903c"/>
+  </symbol>
+  <symbol id="ic-burger" viewBox="0 0 28 24">
+    <rect x="2" y="0" width="24" height="7" fill="#e67e22"/>
+    <rect x="0" y="5" width="28" height="4" fill="#e67e22"/>
+    <rect x="3" y="5" width="5" height="2" fill="#f0c040" opacity=".7"/>
+    <rect x="10" y="5" width="5" height="2" fill="#f0c040" opacity=".7"/>
+    <rect x="0" y="9" width="28" height="4" fill="#c0392b"/>
+    <rect x="0" y="12" width="28" height="3" fill="#27ae60"/>
+    <rect x="0" y="15" width="28" height="2" fill="#f1c40f" opacity=".8"/>
+    <rect x="0" y="17" width="28" height="7" fill="#d4a020"/>
+    <rect x="2" y="22" width="24" height="2" fill="#b8860b"/>
+  </symbol>
+  <symbol id="ic-hotdog" viewBox="0 0 34 16">
+    <rect x="2" y="2" width="30" height="12" fill="#d4a060"/>
+    <rect x="0" y="4" width="34" height="8" fill="#c8903c"/>
+    <rect x="4" y="4" width="26" height="8" fill="#e74c3c"/>
+    <rect x="6" y="5" width="22" height="6" fill="#c0392b"/>
+    <rect x="4" y="7" width="26" height="2" fill="#f1c40f" opacity=".7"/>
+  </symbol>
+  <symbol id="ic-sandwich" viewBox="0 0 30 22">
+    <rect x="0" y="0" width="30" height="5" fill="#d4a060"/>
+    <rect x="2" y="2" width="26" height="3" fill="#e8b870"/>
+    <rect x="0" y="5" width="30" height="4" fill="#27ae60"/>
+    <rect x="0" y="9" width="30" height="4" fill="#e74c3c"/>
+    <rect x="0" y="13" width="30" height="3" fill="#f1c40f"/>
+    <rect x="0" y="16" width="30" height="6" fill="#c8903c"/>
+    <rect x="2" y="20" width="26" height="2" fill="#b8800a"/>
+  </symbol>
+  <symbol id="ic-chicken" viewBox="0 0 26 28">
+    <rect x="7" y="0" width="12" height="14" fill="#e8b040"/>
+    <rect x="5" y="2" width="16" height="12" fill="#f0c050"/>
+    <rect x="10" y="12" width="6" height="8" fill="#e8b040"/>
+    <rect x="11" y="18" width="5" height="6" fill="#ccc"/>
+    <rect x="9" y="23" width="9" height="3" fill="#bbb"/>
+    <rect x="5" y="4" width="5" height="5" fill="#fff" opacity=".25"/>
+  </symbol>
+  <symbol id="ic-alitas" viewBox="0 0 30 22">
+    <rect x="2" y="6" width="10" height="14" fill="#e8b040" rx="3"/>
+    <rect x="0" y="8" width="12" height="10" fill="#f0c050" rx="2"/>
+    <rect x="10" y="2" width="18" height="18" fill="#e8b040" rx="4"/>
+    <rect x="12" y="4" width="14" height="14" fill="#f0c050" rx="3"/>
+    <rect x="13" y="5" width="5" height="5" fill="#fff" opacity=".2"/>
+    <!-- salsa -->
+    <rect x="3" y="10" width="6" height="3" fill="#c0392b" opacity=".7"/>
+    <rect x="13" y="6" width="8" height="3" fill="#c0392b" opacity=".7"/>
+  </symbol>
+  <symbol id="ic-croqueta" viewBox="0 0 28 20">
+    <rect x="4" y="4" width="20" height="12" fill="#c8903c" rx="6"/>
+    <rect x="6" y="6" width="16" height="8" fill="#e8b060" rx="4"/>
+    <rect x="7" y="7" width="6" height="4" fill="#fff" opacity=".2"/>
+    <rect x="2" y="8" width="4" height="4" fill="#c8903c" rx="2"/>
+    <rect x="22" y="8" width="4" height="4" fill="#c8903c" rx="2"/>
+  </symbol>
+  <symbol id="ic-pinchito" viewBox="0 0 32 14">
+    <rect x="0" y="6" width="32" height="2" fill="#888"/>
+    <rect x="4" y="3" width="6" height="8" fill="#c0392b" rx="2"/>
+    <rect x="12" y="3" width="6" height="8" fill="#e67e22" rx="2"/>
+    <rect x="20" y="3" width="6" height="8" fill="#c0392b" rx="2"/>
+    <rect x="29" y="4" width="3" height="6" fill="#aaa" rx="1"/>
+  </symbol>
+  <symbol id="ic-patatas" viewBox="0 0 28 24">
+    <rect x="4" y="4" width="4" height="18" fill="#f1c40f" rx="2"/>
+    <rect x="10" y="2" width="4" height="20" fill="#f39c12" rx="2"/>
+    <rect x="16" y="4" width="4" height="18" fill="#f1c40f" rx="2"/>
+    <rect x="22" y="6" width="4" height="16" fill="#f39c12" rx="2"/>
+    <rect x="2" y="20" width="24" height="4" fill="#e74c3c" rx="2"/>
+  </symbol>
+  <symbol id="ic-nugget" viewBox="0 0 28 22">
+    <rect x="2" y="4" width="10" height="14" fill="#e8b040" rx="4"/>
+    <rect x="4" y="6" width="6" height="10" fill="#f0c050" rx="3"/>
+    <rect x="14" y="2" width="12" height="16" fill="#e8b040" rx="4"/>
+    <rect x="16" y="4" width="8" height="12" fill="#f0c050" rx="3"/>
+    <rect x="4" y="7" width="3" height="4" fill="#fff" opacity=".2"/>
+    <rect x="16" y="5" width="4" height="5" fill="#fff" opacity=".2"/>
+  </symbol>
+  <symbol id="ic-pizza" viewBox="0 0 28 28">
+    <rect x="11" y="0" width="6" height="4" fill="#e67e22"/>
+    <rect x="7" y="4" width="14" height="4" fill="#e67e22"/>
+    <rect x="3" y="8" width="22" height="4" fill="#e67e22"/>
+    <rect x="0" y="12" width="28" height="5" fill="#e67e22"/>
+    <rect x="2" y="17" width="24" height="4" fill="#e67e22"/>
+    <rect x="5" y="21" width="18" height="4" fill="#e67e22"/>
+    <rect x="9" y="6" width="10" height="5" fill="#f1c40f" opacity=".8"/>
+    <rect x="4" y="10" width="20" height="5" fill="#f1c40f" opacity=".8"/>
+    <rect x="11" y="8" width="5" height="5" fill="#c0392b"/>
+    <rect x="6" y="13" width="5" height="5" fill="#c0392b"/>
+    <rect x="17" y="12" width="5" height="5" fill="#c0392b"/>
+  </symbol>
+  <symbol id="ic-solomillo" viewBox="0 0 28 20">
+    <rect x="2" y="4" width="24" height="12" fill="#c0392b" rx="3"/>
+    <rect x="4" y="6" width="20" height="8" fill="#e74c3c" rx="2"/>
+    <rect x="5" y="7" width="6" height="3" fill="#fff" opacity=".2"/>
+    <!-- queso -->
+    <rect x="4" y="2" width="20" height="4" fill="#f1c40f" rx="2"/>
+    <rect x="6" y="2" width="4" height="2" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-flamenquin" viewBox="0 0 32 16">
+    <rect x="2" y="4" width="28" height="8" fill="#d4a060" rx="4"/>
+    <rect x="4" y="5" width="24" height="6" fill="#e8b870" rx="3"/>
+    <rect x="6" y="6" width="8" height="4" fill="#c0392b" rx="2"/>
+    <rect x="16" y="6" width="8" height="4" fill="#e8b060" rx="2"/>
+    <rect x="0" y="6" width="4" height="4" fill="#c8903c" rx="2"/>
+    <rect x="28" y="6" width="4" height="4" fill="#c8903c" rx="2"/>
+  </symbol>
+  <symbol id="ic-beer" viewBox="0 0 20 28">
+    <rect x="3" y="6" width="14" height="20" fill="#f39c12"/>
+    <rect x="1" y="8" width="2" height="14" fill="#e67e22"/>
+    <rect x="17" y="8" width="2" height="14" fill="#e67e22"/>
+    <rect x="3" y="6" width="14" height="7" fill="#fff" opacity=".85"/>
+    <rect x="5" y="2" width="10" height="5" fill="#fff" opacity=".9"/>
+    <rect x="7" y="0" width="6" height="4" fill="#ecf0f1"/>
+    <rect x="5" y="16" width="2" height="7" fill="#e67e22" opacity=".3"/>
+    <rect x="11" y="14" width="2" height="9" fill="#e67e22" opacity=".3"/>
+  </symbol>
+  <symbol id="ic-soda" viewBox="0 0 18 28">
+    <rect x="3" y="5" width="12" height="21" fill="#e74c3c"/>
+    <rect x="1" y="7" width="2" height="17" fill="#c0392b"/>
+    <rect x="15" y="7" width="2" height="17" fill="#c0392b"/>
+    <rect x="5" y="2" width="8" height="5" fill="#bbb"/>
+    <rect x="7" y="0" width="4" height="3" fill="#999"/>
+    <rect x="3" y="24" width="12" height="2" fill="#c0392b"/>
+    <rect x="4" y="9" width="5" height="13" fill="#fff" opacity=".18"/>
+    <rect x="7" y="7" width="3" height="3" fill="#fff" opacity=".4"/>
+  </symbol>
+  <symbol id="ic-wine" viewBox="0 0 18 28">
+    <rect x="7" y="0" width="4" height="6" fill="#bbb"/>
+    <rect x="3" y="6" width="12" height="12" fill="#8e44ad"/>
+    <rect x="1" y="8" width="2" height="8" fill="#7d3c98"/>
+    <rect x="15" y="8" width="2" height="8" fill="#7d3c98"/>
+    <rect x="3" y="16" width="12" height="2" fill="#7d3c98"/>
+    <rect x="7" y="18" width="4" height="6" fill="#999"/>
+    <rect x="4" y="24" width="10" height="3" fill="#888"/>
+    <rect x="4" y="8" width="4" height="8" fill="#fff" opacity=".15"/>
+  </symbol>
+  <symbol id="ic-coffee" viewBox="0 0 24 22">
+    <rect x="2" y="8" width="16" height="12" fill="#795548"/>
+    <rect x="4" y="10" width="12" height="8" fill="#4e342e"/>
+    <rect x="18" y="10" width="4" height="8" fill="#795548" rx="2"/>
+    <rect x="0" y="20" width="20" height="2" fill="#5d4037"/>
+    <rect x="6" y="2" width="2" height="4" fill="#aaa"/>
+    <rect x="10" y="0" width="2" height="5" fill="#aaa"/>
+    <rect x="14" y="2" width="2" height="4" fill="#aaa"/>
+    <rect x="5" y="11" width="4" height="4" fill="#fff" opacity=".1"/>
+  </symbol>
+  <symbol id="ic-montadito" viewBox="0 0 28 18">
+    <rect x="0" y="0" width="28" height="5" fill="#d4a060" rx="2"/>
+    <rect x="2" y="3" width="24" height="3" fill="#e8b870" rx="1"/>
+    <rect x="0" y="5" width="28" height="3" fill="#27ae60"/>
+    <rect x="0" y="8" width="28" height="3" fill="#e74c3c"/>
+    <rect x="0" y="11" width="28" height="5" fill="#c8903c" rx="2"/>
+    <rect x="2" y="14" width="24" height="2" fill="#b8800a" rx="1"/>
+  </symbol>
+</defs>
+</svg>
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-title">🕹️ ARCADE<br>PLANET 🕹️</div>
-  <div class="s-sub">— THE ULTIMATE BAR EXPERIENCE —</div>
-  <canvas id="pacCanvas" width="300" height="80"></canvas>
-  <div class="s-score">HI-SCORE <span>999.999</span></div>
-  <div class="s-score">1UP <span>000.000</span></div>
-  <button class="s-btn" id="startBtn">▶ VER CARTA</button>
-  <div class="s-ghosts">
-    <span class="ghost-r">👻</span> INKY
-    <span style="font-size:20px">😮</span> PAC
-    <span class="ghost-b">👻</span> BLINKY
+  <div class="sky" style="padding-bottom:0;">
+    <div class="c1"></div><div class="c2"></div><div class="c3"></div>
+    <div class="game-title">ARCADE<br>PLANET</div>
+    <div class="game-sub">— THE ULTIMATE BAR EXPERIENCE —</div>
+    <canvas id="pacCanvas" width="300" height="72"></canvas>
+    <div class="hiscore">HI-SCORE <span>999.999</span> &nbsp;&nbsp; 1UP <span>000.000</span></div>
+    <button class="start-btn" id="startBtn">&#9654; VER CARTA</button>
+    <div class="scene">
+      <svg width="52" height="48"><use href="#s-castle"/></svg>
+      <svg width="30" height="40"><use href="#s-flower"/></svg>
+      <svg width="44" height="50"><use href="#s-tree"/></svg>
+      <svg width="36" height="38"><use href="#s-shroom"/></svg>
+      <svg width="30" height="42"><use href="#s-pipe"/></svg>
+      <svg width="28" height="28"><use href="#s-star"/></svg>
+      <svg width="44" height="50"><use href="#s-tree"/></svg>
+      <svg width="52" height="48"><use href="#s-castle"/></svg>
+    </div>
   </div>
+  <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
 </div>
 
 <!-- CARTA -->
 <div id="carta" style="display:none;flex-direction:column;">
-  <div class="strip"></div>
-  <div class="topbar">
-    <div class="top-title">🕹️ ARCADE PLANET</div>
-    <div class="top-lives">♥♥♥</div>
+  <div class="sky" style="padding:10px 10px 0;">
+    <div class="c1" style="top:8px;"></div><div class="c2" style="top:6px;"></div>
+    <div style="font-size:11px;color:#fff;text-shadow:2px 2px 0 #c0392b;text-align:center;margin:28px 0 6px;position:relative;z-index:2;">ARCADE PLANET</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-around;padding:8px 4px 0;position:relative;z-index:2;">
+      <svg width="46" height="44"><use href="#s-castle"/></svg>
+      <svg width="28" height="30"><use href="#s-shroom"/></svg>
+      <svg width="26" height="28"><use href="#s-star"/></svg>
+      <svg width="28" height="30"><use href="#s-shroom"/></svg>
+      <svg width="46" height="44"><use href="#s-castle"/></svg>
+    </div>
   </div>
+  <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
 
   <nav class="nav" id="navBar">
-    <button class="nb active" data-t="baguettes"><em>🥖</em>BAGUET</button>
-    <button class="nb" data-t="burguers"><em>🍔</em>BURGUER</button>
-    <button class="nb" data-t="perritos"><em>🌭</em>PERRITO</button>
-    <button class="nb" data-t="sandwiches"><em>🥪</em>SANDWICH</button>
-    <button class="nb" data-t="varios"><em>🍗</em>VARIOS</button>
-    <button class="nb" data-t="pizzas"><em>🍕</em>PIZZAS</button>
-    <button class="nb" data-t="montaditos"><em>🍞</em>MONTAD.</button>
-    <button class="nb" data-t="bebidas"><em>🥤</em>BEBIDAS</button>
+    <button class="nb active" data-t="baguettes"><svg class="nb-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg>BAGUET</button>
+    <button class="nb" data-t="burguers"><svg class="nb-icon" viewBox="0 0 28 24"><use href="#ic-burger"/></svg>BURGUER</button>
+    <button class="nb" data-t="perritos"><svg class="nb-icon" viewBox="0 0 34 16"><use href="#ic-hotdog"/></svg>PERRITO</button>
+    <button class="nb" data-t="sandwiches"><svg class="nb-icon" viewBox="0 0 30 22"><use href="#ic-sandwich"/></svg>SANDWICH</button>
+    <button class="nb" data-t="varios"><svg class="nb-icon" viewBox="0 0 30 22"><use href="#ic-alitas"/></svg>VARIOS</button>
+    <button class="nb" data-t="pizzas"><svg class="nb-icon" viewBox="0 0 28 28"><use href="#ic-pizza"/></svg>PIZZAS</button>
+    <button class="nb" data-t="montaditos"><svg class="nb-icon" viewBox="0 0 28 18"><use href="#ic-montadito"/></svg>MONTAD.</button>
+    <button class="nb" data-t="bebidas"><svg class="nb-icon" viewBox="0 0 20 28"><use href="#ic-beer"/></svg>BEBIDAS</button>
   </nav>
-
-  <div class="ticker"><span class="ticker-in">⬛ ARCADE PLANET · THE ULTIMATE BAR EXPERIENCE · COME · JUEGA · DISFRUTA · INSERT COIN · BEBIDAS Y PATATAS INCLUIDAS EN BAGUETTES · BURGUERS · PERRITOS · SANDWICHES ⬛ ARCADE PLANET · THE ULTIMATE BAR EXPERIENCE ⬛</span></div>
+  <div class="ticker"><span class="ticker-in">&#11035; ARCADE PLANET &middot; BEBIDAS Y PATATAS INCLUIDAS EN: BAGUETTES &middot; BURGUERS &middot; PERRITOS &middot; SANDWICHES &#11035; THE ULTIMATE BAR EXPERIENCE &middot; COME &middot; JUEGA &middot; DISFRUTA &#11035;</span></div>
 
   <!-- BAGUETTES -->
-  <div id="baguettes">
-    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🥖</div>
-        <div><div class="sec-lbl">BAGUETTES</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">BAGUET POLLO</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🏔️</div><div class="ic-name">BAGUET SERRANA</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">8,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐟</div><div class="ic-name">BAGUET ATÚN</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍪</div><div class="ic-name">BAGUET MANTECADO</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐷</div><div class="ic-name">BAGUET COCHINITO</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">BAGUET LOMO ADOBADO</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍳</div><div class="ic-name">BAGUET TORTILLA</div></div><div class="ic-right"><div class="ic-price">7,50€</div></div></div>
+  <div id="baguettes" class="world">
+    <div class="world-bg"><svg width="120" height="110"><use href="#s-pipe"/></svg><svg width="160" height="150"><use href="#s-tree"/></svg><svg width="120" height="110"><use href="#s-pipe"/></svg></div>
+    <div class="sec-title-box">BAGUETTES<div class="sec-subtitle">NIVEL 1 — EASY MODE</div></div>
+    <div class="nota">&#11088; BEBIDA + PATATAS INCLUIDAS &#11088;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET POLLO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET SERRANA</div></div><div class="ic-right"><span class="badge fav">&#9733;FAV</span><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET ATÚN</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET MANTECADO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET COCHINITO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">7,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET LOMO ADOBADO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">7,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 36 16"><use href="#ic-baguette"/></svg><div class="ic-name">BAGUET TORTILLA</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">7,50€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- BURGUERS -->
-  <div id="burguers">
-    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🍔</div>
-        <div><div class="sec-lbl">BURGUERS</div><div class="sec-lvl">NIVEL 2 — NORMAL MODE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍔</div><div class="ic-name">BURGUER SIMPLE</div></div><div class="ic-right"><div class="ic-price">8,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍔</div><div class="ic-name">BURGUER COMPLETA</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">9,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">BURGUER ANGUS</div></div><div class="ic-right"><span class="badge hot">BOSS</span><div class="ic-price">12,50€</div></div></div>
+  <div id="burguers" class="world">
+    <div class="world-bg"><svg width="180" height="170"><use href="#s-castle"/></svg><svg width="100" height="90"><use href="#s-shroom"/></svg><svg width="180" height="170"><use href="#s-castle"/></svg></div>
+    <div class="sec-title-box">BURGUERS<div class="sec-subtitle">NIVEL 2 — NORMAL MODE</div></div>
+    <div class="nota">&#11088; BEBIDA + PATATAS INCLUIDAS &#11088;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 24"><use href="#ic-burger"/></svg><div class="ic-name">BURGUER SIMPLE</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">8,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 24"><use href="#ic-burger"/></svg><div class="ic-name">BURGUER COMPLETA</div></div><div class="ic-right"><span class="badge fav">&#9733;FAV</span><div class="ic-price">9,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 24"><use href="#ic-burger"/></svg><div class="ic-name">BURGUER ANGUS</div></div><div class="ic-right"><span class="badge boss">BOSS</span><div class="ic-price">12,50€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- PERRITOS -->
-  <div id="perritos">
-    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🌭</div>
-        <div><div class="sec-lbl">PERRITOS</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🌭</div><div class="ic-name">PERRITO SIMPLE</div></div><div class="ic-right"><div class="ic-price">5,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🌭</div><div class="ic-name">PERRITO COMPLETO</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">7,50€</div></div></div>
+  <div id="perritos" class="world">
+    <div class="world-bg"><svg width="150" height="160"><use href="#s-tree"/></svg><svg width="100" height="90"><use href="#s-star"/></svg><svg width="150" height="160"><use href="#s-tree"/></svg></div>
+    <div class="sec-title-box">PERRITOS<div class="sec-subtitle">NIVEL 1 — EASY MODE</div></div>
+    <div class="nota">&#11088; BEBIDA + PATATAS INCLUIDAS &#11088;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 34 16"><use href="#ic-hotdog"/></svg><div class="ic-name">PERRITO SIMPLE</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">5,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 34 16"><use href="#ic-hotdog"/></svg><div class="ic-name">PERRITO COMPLETO</div></div><div class="ic-right"><span class="badge fav">&#9733;FAV</span><div class="ic-price">7,50€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- SANDWICHES -->
-  <div id="sandwiches">
-    <div class="nota">★ BEBIDA + PATATAS INCLUIDAS ★</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🥪</div>
-        <div><div class="sec-lbl">SANDWICHES</div><div class="sec-lvl">NIVEL 1 — EASY MODE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">SANDWICH POLLO</div></div><div class="ic-right"><div class="ic-price">9,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐟</div><div class="ic-name">SANDWICH ATÚN</div></div><div class="ic-right"><div class="ic-price">8,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">⭐</div><div class="ic-name">SANDWICH ESPECIAL</div></div><div class="ic-right"><span class="badge new">NEW</span><div class="ic-price">8,00€</div></div></div>
+  <div id="sandwiches" class="world">
+    <div class="world-bg"><svg width="110" height="120"><use href="#s-pipe"/></svg><svg width="100" height="90"><use href="#s-flower"/></svg><svg width="110" height="120"><use href="#s-pipe"/></svg></div>
+    <div class="sec-title-box">SANDWICHES<div class="sec-subtitle">NIVEL 1 — EASY MODE</div></div>
+    <div class="nota">&#11088; BEBIDA + PATATAS INCLUIDAS &#11088;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 30 22"><use href="#ic-sandwich"/></svg><div class="ic-name">SANDWICH POLLO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">9,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 30 22"><use href="#ic-sandwich"/></svg><div class="ic-name">SANDWICH ATÚN</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">8,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 30 22"><use href="#ic-sandwich"/></svg><div class="ic-name">SANDWICH ESPECIAL</div></div><div class="ic-right"><span class="badge new">NEW</span><div class="ic-price">8,00€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- VARIOS -->
-  <div id="varios">
-    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">👾</div>
-        <div><div class="sec-lbl">VARIOS</div><div class="sec-lvl">BONUS STAGE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">ALITAS POLLO</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">LAGRIMITAS</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🧀</div><div class="ic-name">SOLOMILLO 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">6,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥃</div><div class="ic-name">SOLOMILLO WHISKY</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍖</div><div class="ic-name">FLAMENQUÍN</div></div><div class="ic-right"><div class="ic-price">9,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🫓</div><div class="ic-name">CROQUETAS</div></div><div class="ic-right"><div class="ic-price">5,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍢</div><div class="ic-name">PINCHITOS</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🔥</div><div class="ic-name">PATATAS BRAVAS</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">5,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🍗</div><div class="ic-name">NUGGETS</div></div><div class="ic-right"><div class="ic-price">6,00€</div></div></div>
+  <div id="varios" class="world">
+    <div class="world-bg"><svg width="150" height="160"><use href="#s-tree"/></svg><svg width="100" height="100"><use href="#s-shroom"/></svg><svg width="150" height="160"><use href="#s-tree"/></svg></div>
+    <div class="sec-title-box">VARIOS<div class="sec-subtitle">BONUS STAGE</div></div>
+    <div class="nota roja">&#9888; BEBIDAS NO INCLUIDAS &#9888;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 30 22"><use href="#ic-alitas"/></svg><div class="ic-name">ALITAS POLLO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 26 28"><use href="#ic-chicken"/></svg><div class="ic-name">LAGRIMITAS</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 20"><use href="#ic-solomillo"/></svg><div class="ic-name">SOLOMILLO 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">&#9733;FAV</span><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 20"><use href="#ic-solomillo"/></svg><div class="ic-name">SOLOMILLO WHISKY</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">6,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 32 16"><use href="#ic-flamenquin"/></svg><div class="ic-name">FLAMENQUÍN</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">9,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 20"><use href="#ic-croqueta"/></svg><div class="ic-name">CROQUETAS</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">5,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 32 14"><use href="#ic-pinchito"/></svg><div class="ic-name">PINCHITOS</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 24"><use href="#ic-patatas"/></svg><div class="ic-name">PATATAS BRAVAS</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">5,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 22"><use href="#ic-nugget"/></svg><div class="ic-name">NUGGETS</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">6,00€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- PIZZAS -->
-  <div id="pizzas">
-    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🍕</div>
-        <div><div class="sec-lbl">PIZZAS</div><div class="sec-lvl">FINAL BOSS — HARD MODE</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">PIZZA POLLO</div></div><div class="ic-right"><div class="ic-price">20,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🧀</div><div class="ic-name">PIZZA 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">★FAV</span><div class="ic-price">20,00€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">PIZZA BARBACOA</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">20,00€</div></div></div>
+  <div id="pizzas" class="world">
+    <div class="world-bg"><svg width="180" height="170"><use href="#s-castle"/></svg><svg width="120" height="120"><use href="#s-pipe"/></svg><svg width="180" height="170"><use href="#s-castle"/></svg></div>
+    <div class="sec-title-box">PIZZAS<div class="sec-subtitle">FINAL BOSS — HARD MODE</div></div>
+    <div class="nota roja">&#9888; BEBIDAS NO INCLUIDAS &#9888;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 28"><use href="#ic-pizza"/></svg><div class="ic-name">PIZZA POLLO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">20,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 28"><use href="#ic-pizza"/></svg><div class="ic-name">PIZZA 4 QUESOS</div></div><div class="ic-right"><span class="badge fav">&#9733;FAV</span><div class="ic-price">20,00€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 28"><use href="#ic-pizza"/></svg><div class="ic-name">PIZZA BARBACOA</div></div><div class="ic-right"><span class="badge hot">HOT</span><div class="ic-price">20,00€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- MONTADITOS -->
-  <div id="montaditos">
-    <div class="nota roja">⚠ BEBIDAS NO INCLUIDAS ⚠</div>
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🍞</div>
-        <div><div class="sec-lbl">MONTADITOS</div><div class="sec-lvl">MINI GAME</div></div>
-      </div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🐔</div><div class="ic-name">MONTADITO POLLO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥩</div><div class="ic-name">MONTADITO LOMO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
-      <div class="ic"><div class="ic-left"><div class="ic-icon">🥓</div><div class="ic-name">BACON Y QUESO</div></div><div class="ic-right"><div class="ic-price">3,50€</div></div></div>
+  <div id="montaditos" class="world">
+    <div class="world-bg"><svg width="100" height="90"><use href="#s-flower"/></svg><svg width="120" height="110"><use href="#s-shroom"/></svg><svg width="100" height="90"><use href="#s-flower"/></svg></div>
+    <div class="sec-title-box">MONTADITOS<div class="sec-subtitle">MINI GAME</div></div>
+    <div class="nota roja">&#9888; BEBIDAS NO INCLUIDAS &#9888;</div>
+    <div class="items">
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 18"><use href="#ic-montadito"/></svg><div class="ic-name">MONTADITO POLLO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 18"><use href="#ic-montadito"/></svg><div class="ic-name">MONTADITO LOMO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">3,50€</div></div></div>
+      <div class="ic"><div class="ic-left"><svg class="ic-icon" viewBox="0 0 28 18"><use href="#ic-montadito"/></svg><div class="ic-name">BACON Y QUESO</div></div><div class="ic-right"><svg width="22" height="22" viewBox="0 0 18 18"><use href="#s-coin"/></svg><div class="ic-price">3,50€</div></div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <!-- BEBIDAS -->
-  <div id="bebidas">
-    <div class="sec">
-      <div class="sec-hdr">
-        <div class="sec-art">🥤</div>
-        <div><div class="sec-lbl">BEBIDAS</div><div class="sec-lvl">POWER-UPS</div></div>
-      </div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🍺</div><div><div class="dr-name">CAÑA</div><div class="dr-sub">Presión del barril</div></div></div><div class="dr-price pr-b">2,00€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🍺</div><div><div class="dr-name">BOTELLÍN</div><div class="dr-sub">Estrella / Voll-Damm</div></div></div><div class="dr-price pr-b">2,50€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🥤</div><div><div class="dr-name">COCA-COLA</div><div class="dr-sub">Normal / Zero / Light</div></div></div><div class="dr-price pr-p">2,00€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🍊</div><div><div class="dr-name">FANTA</div><div class="dr-sub">Naranja / Limón</div></div></div><div class="dr-price pr-p">2,00€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🫧</div><div><div class="dr-name">AQUARIUS / SPRITE</div><div class="dr-sub">Varios sabores</div></div></div><div class="dr-price pr-p">2,00€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">💧</div><div><div class="dr-name">AGUA</div><div class="dr-sub">Con gas / Sin gas</div></div></div><div class="dr-price pr-p">1,50€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">☕</div><div><div class="dr-name">CAFÉ</div><div class="dr-sub">Solo / Cortado / Con leche</div></div></div><div class="dr-price pr-y">1,50€</div></div>
-      <div class="dr"><div class="dr-l"><div class="dr-ico">🍷</div><div><div class="dr-name">VINO DE LA CASA</div><div class="dr-sub">Tinto / Blanco / Rosado</div></div></div><div class="dr-price pr-y">2,00€</div></div>
+  <div id="bebidas" class="world">
+    <div class="world-bg"><svg width="150" height="160"><use href="#s-tree"/></svg><svg width="100" height="90"><use href="#s-star"/></svg><svg width="150" height="160"><use href="#s-tree"/></svg></div>
+    <div class="sec-title-box">BEBIDAS<div class="sec-subtitle">POWER-UPS DISPONIBLES</div></div>
+    <div class="drinks-wrap" style="position:relative;z-index:1;">
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 20 28"><use href="#ic-beer"/></svg><div><div class="dr-name">CAÑA</div><div class="dr-sub">Presión del barril</div></div></div><div class="dr-price">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 20 28"><use href="#ic-beer"/></svg><div><div class="dr-name">BOTELLÍN</div><div class="dr-sub">Estrella / Voll-Damm</div></div></div><div class="dr-price">2,50€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 18 28"><use href="#ic-soda"/></svg><div><div class="dr-name">COCA-COLA</div><div class="dr-sub">Normal / Zero / Light</div></div></div><div class="dr-price">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 18 28"><use href="#ic-soda"/></svg><div><div class="dr-name">FANTA</div><div class="dr-sub">Naranja / Limón</div></div></div><div class="dr-price">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 18 28"><use href="#ic-soda"/></svg><div><div class="dr-name">AQUARIUS / SPRITE</div><div class="dr-sub">Varios sabores</div></div></div><div class="dr-price">2,00€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 18 28"><use href="#ic-soda"/></svg><div><div class="dr-name">AGUA</div><div class="dr-sub">Con gas / Sin gas</div></div></div><div class="dr-price">1,50€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 24 22"><use href="#ic-coffee"/></svg><div><div class="dr-name">CAFÉ</div><div class="dr-sub">Solo / Cortado / Con leche</div></div></div><div class="dr-price">1,50€</div></div>
+      <div class="dr"><div class="dr-l"><svg class="dr-ico" viewBox="0 0 18 28"><use href="#ic-wine"/></svg><div><div class="dr-name">VINO DE LA CASA</div><div class="dr-sub">Tinto / Blanco / Rosado</div></div></div><div class="dr-price">2,00€</div></div>
     </div>
+    <div class="ground"><div class="gt"></div><div class="gm"></div><div class="gb"></div></div>
   </div>
-  <div class="strip"></div>
 
   <div class="footer">
-    <div class="ft-pac">😮·····👻👻</div>
-    <div class="ft-txt">
-      Alérgenos disponibles al solicitar · Precios con IVA incluido<br>
-      ♥ ♥ ♥ — GAME NOT OVER
+    <div class="footer-sprites">
+      <svg width="28" height="30"><use href="#s-shroom"/></svg>
+      <svg width="24" height="26"><use href="#s-star"/></svg>
+      <svg width="46" height="44"><use href="#s-castle"/></svg>
+      <svg width="24" height="26"><use href="#s-star"/></svg>
+      <svg width="28" height="30"><use href="#s-shroom"/></svg>
     </div>
+    <div class="ft-txt">Alérgenos disponibles al solicitar · Precios con IVA incluido<br>&#9829; &#9829; &#9829; — GAME NOT OVER</div>
     <div class="ft-score">© ARCADE PLANET — HI-SCORE: TÚ</div>
   </div>
 </div>
 
 </div>
-
 <script>
-/* PAC-MAN */
-const cv=document.getElementById('pacCanvas'),ctx=cv.getContext('2d');
-const W=300,H=80,PAC_Y=40,PAC_R=14;
-let px=20,mouth=0,mdir=1;
-// dots spread across the path
-const dots=[];for(let i=50;i<270;i+=18)dots.push({x:i,eaten:false});
-// ghosts start to the RIGHT of pac-man, fleeing ahead
-const ghosts=[{x:220,c:'#ff0080'},{x:255,c:'#00ccff'}];
+/* PAC-MAN: él se mueve, los fantasmas huyen delante */
+const cv = document.getElementById('pacCanvas');
+const ctx = cv.getContext('2d');
+const W = 300, H = 72, PY = 38, PR = 15;
+const PAC_SPEED = 1.8;
+const GHOST_SPEED = 1.3; // fantasmas más lentos que pac-man → los alcanza
+
+let pacX = -PR;
+const dots = [];
+for(let i = 0; i < 20; i++) dots.push({x: 20 + i * 16, eaten: false});
+
+// fantasmas empiezan delante
+const ghosts = [
+  {x: 160, c:'#ff3399', eaten:false},
+  {x: 210, c:'#00ccff', eaten:false}
+];
+
+let mAngle = 0, mDir = 1;
 
 function resetRound(){
-  px=20;
-  dots.forEach(d=>d.eaten=false);
-  ghosts[0].x=220;ghosts[1].x=255;
+  pacX = -PR;
+  ghosts[0].x = 160; ghosts[0].eaten = false;
+  ghosts[1].x = 210; ghosts[1].eaten = false;
+  dots.forEach((d,i) => { d.x = 20 + i*16; d.eaten = false; });
 }
 
-function draw(){
+function drawFrame(){
   ctx.clearRect(0,0,W,H);
 
-  // dots
-  dots.forEach(d=>{
-    if(!d.eaten){
-      ctx.fillStyle='#ff0';
-      ctx.beginPath();ctx.arc(d.x,PAC_Y,3,0,Math.PI*2);ctx.fill();
+  // mover pac-man
+  pacX += PAC_SPEED;
+
+  // mover fantasmas huyendo (más lentos → pac los pilla)
+  ghosts.forEach(g => {
+    if(!g.eaten){
+      g.x += GHOST_SPEED;
+      // pac come fantasma
+      if(Math.abs(g.x - pacX) < PR + 8){
+        g.eaten = true;
+        // destello blanco breve
+        ctx.fillStyle='rgba(255,255,255,0.6)';
+        ctx.fillRect(0,0,W,H);
+      }
     }
   });
 
-  // ghosts — move right, always ahead of pac-man
-  ghosts.forEach(g=>{
-    // flee to the right
-    g.x+=1.0;
-    if(g.x>W+20) g.x=-20; // wrap around
+  // resetear cuando pac llega al final
+  if(pacX > W + PR) resetRound();
 
-    // body
-    ctx.fillStyle=g.c;
+  // dibujar puntos
+  dots.forEach(d => {
+    if(!d.eaten){
+      if(d.x < pacX - 2) d.eaten = true;
+      else {
+        ctx.fillStyle = '#ffe066';
+        ctx.beginPath(); ctx.arc(d.x, PY, 3.5, 0, Math.PI*2); ctx.fill();
+      }
+    }
+  });
+
+  // dibujar fantasmas (solo los no comidos y delante del pac)
+  ghosts.forEach(g => {
+    if(g.eaten || g.x < pacX - PR) return;
+    const gx = g.x, gy = PY - 2;
+    ctx.fillStyle = g.c;
     ctx.beginPath();
-    ctx.arc(g.x,PAC_Y-2,10,Math.PI,0);
-    ctx.lineTo(g.x+10,PAC_Y+10);
-    ctx.lineTo(g.x+6,PAC_Y+6);
-    ctx.lineTo(g.x+2,PAC_Y+10);
-    ctx.lineTo(g.x-2,PAC_Y+6);
-    ctx.lineTo(g.x-6,PAC_Y+10);
-    ctx.lineTo(g.x-10,PAC_Y+10);
-    ctx.closePath();ctx.fill();
-    // eyes
+    ctx.arc(gx,gy,11,Math.PI,0);
+    ctx.lineTo(gx+11,gy+13); ctx.lineTo(gx+7,gy+9);
+    ctx.lineTo(gx+3,gy+13); ctx.lineTo(gx-1,gy+9);
+    ctx.lineTo(gx-5,gy+13); ctx.lineTo(gx-9,gy+9);
+    ctx.lineTo(gx-11,gy+13);
+    ctx.closePath(); ctx.fill();
+    // ojos mirando hacia la derecha (huyendo)
     ctx.fillStyle='#fff';
-    ctx.beginPath();ctx.arc(g.x-4,PAC_Y-4,3,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(g.x+4,PAC_Y-4,3,0,Math.PI*2);ctx.fill();
-    // pupils looking right (fleeing)
-    ctx.fillStyle='#00f';
-    ctx.beginPath();ctx.arc(g.x-3,PAC_Y-4,1.5,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(g.x+5,PAC_Y-4,1.5,0,Math.PI*2);ctx.fill();
-
-    // pac-man eats ghost on contact
-    if(Math.abs(g.x-px)<16){ g.x=W+30; }
+    ctx.beginPath(); ctx.arc(gx-4,gy-3,3.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx+4,gy-3,3.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#0033ff';
+    ctx.beginPath(); ctx.arc(gx-2,gy-3,1.8,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx+6,gy-3,1.8,0,Math.PI*2); ctx.fill();
   });
 
-  // mouth animation
-  mouth+=0.13*mdir;
-  if(mouth>0.32||mouth<0.02) mdir*=-1;
+  // boca suave
+  mAngle += 0.04 * mDir;
+  if(mAngle > 0.28) mDir = -1;
+  if(mAngle < 0.01) mDir = 1;
 
-  // pac-man facing RIGHT
-  ctx.fillStyle='#ff0';
+  // sombra pac
+  ctx.fillStyle='rgba(0,0,0,0.1)';
   ctx.beginPath();
-  ctx.moveTo(px,PAC_Y);
-  ctx.arc(px,PAC_Y,PAC_R,mouth*Math.PI,(2-mouth)*Math.PI);
-  ctx.closePath();ctx.fill();
-  // eye
-  ctx.fillStyle='#000';
-  ctx.beginPath();ctx.arc(px+3,PAC_Y-6,2,0,Math.PI*2);ctx.fill();
+  ctx.ellipse(pacX+2, PY+PR-2, PR*0.8, PR*0.3, 0,0,Math.PI*2);
+  ctx.fill();
+  // pac-man
+  ctx.fillStyle='#ffe000';
+  ctx.strokeStyle='#d4a000'; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(pacX, PY);
+  ctx.arc(pacX, PY, PR, mAngle*Math.PI, (2-mAngle)*Math.PI);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // ojo
+  ctx.fillStyle='#1a0a00';
+  ctx.beginPath(); ctx.arc(pacX+4, PY-7, 2.5, 0, Math.PI*2); ctx.fill();
 
-  // eat dots
-  dots.forEach(d=>{
-    if(!d.eaten&&Math.abs(d.x-px)<PAC_R) d.eaten=true;
-  });
-
-  // advance pac-man to the right
-  px+=1.5;
-  if(px>W+20) resetRound();
-
-  requestAnimationFrame(draw);
+  requestAnimationFrame(drawFrame);
 }
-draw();
+drawFrame();
 
-/* START */
 document.getElementById('startBtn').addEventListener('click',()=>{
   document.getElementById('splash').style.display='none';
-  const c=document.getElementById('carta');c.style.display='flex';c.style.flexDirection='column';
+  const c=document.getElementById('carta');
+  c.style.display='flex'; c.style.flexDirection='column';
+  window.scrollTo(0,0);
 });
 
-/* NAV */
 const secs=['baguettes','burguers','perritos','sandwiches','varios','pizzas','montaditos','bebidas'];
 const btns=document.querySelectorAll('.nb');
+const carta=document.getElementById('carta');
+
+// Scroll container es el body/html, usamos el wrap como referencia
+// Encuentra el contenedor que realmente hace scroll
+function getScroller(){
+  const candidates=[document.documentElement,document.body];
+  for(const c of candidates){ if(c.scrollHeight>c.clientHeight) return c; }
+  return document.documentElement;
+}
+
+let scrolling=false;
+
 btns.forEach(b=>{
-  b.addEventListener('click',()=>{document.getElementById(b.dataset.t).scrollIntoView({behavior:'smooth'});});
+  b.addEventListener('click',()=>{
+    const target=document.getElementById(b.dataset.t);
+    if(!target) return;
+    scrolling=true;
+    btns.forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    b.scrollIntoView({block:'nearest',inline:'center'});
+
+    const nav=document.getElementById('navBar');
+    const navH=nav?nav.offsetHeight:44;
+    const scroller=getScroller();
+    const targetY=target.offsetTop-navH;
+    scroller.scrollTop=targetY;
+
+    setTimeout(()=>scrolling=false,600);
+  });
 });
+
 const obs=new IntersectionObserver(entries=>{
+  if(scrolling)return;
   entries.forEach(e=>{
     if(e.isIntersecting){
-      const id=e.target.id;
-      btns.forEach(b=>b.classList.toggle('active',b.dataset.t===id));
-      const ab=document.querySelector(`.nb[data-t="${id}"]`);
-      if(ab)ab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+      btns.forEach(b=>b.classList.toggle('active',b.dataset.t===e.target.id));
+      const ab=document.querySelector(`.nb[data-t="${e.target.id}"]`);
+      if(ab)ab.scrollIntoView({block:'nearest',inline:'center'});
     }
   });
-},{rootMargin:'-15% 0px -75% 0px'});
+},{rootMargin:'-10% 0px -80% 0px'});
 secs.forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
 </script>
 </body>
